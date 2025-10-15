@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktive KI-Lernplattform für KMU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-color-1: #6a0dad;
+            --glow-color-2: #00bfff;
+            --glow-color-3: #ff00ff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0c29;
+            background: -webkit-linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            color: #e0e0e0;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(106, 13, 173, 0.5);
+        }
+
+        .magic-button {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: color 0.4s ease-in-out;
+            border-image: linear-gradient(45deg, var(--glow-color-1), var(--glow-color-2)) 1;
+            border-width: 2px;
+            border-style: solid;
+        }
+
+        .magic-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--glow-color-3), transparent);
+            transition: left 0.4s ease-in-out;
+            z-index: -1;
+        }
+
+        .magic-button:hover {
+            color: #ffffff;
+        }
+
+        .magic-button:hover::before {
+            left: 100%;
+        }
+        
+        .magic-text {
+            text-shadow: 0 0 5px var(--glow-color-2), 0 0 10px var(--glow-color-2), 0 0 15px var(--glow-color-1);
+        }
+
+        /* Flashcard Flip Animation */
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Infographic styles */
+        .infographic-level {
+            position: relative;
+            padding-left: 3rem;
+            border-left: 3px solid;
+            border-image: linear-gradient(to bottom, var(--glow-color-1), var(--glow-color-2)) 1;
+        }
+        .infographic-level::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--glow-color-2);
+            box-shadow: 0 0 10px var(--glow-color-2), 0 0 15px var(--glow-color-1);
+        }
+        .infographic-level.level-verboten::before { background: #ff4d4d; box-shadow: 0 0 10px #ff4d4d; }
+        .infographic-level.level-hoch::before { background: #ffa500; box-shadow: 0 0 10px #ffa500; }
+        .infographic-level.level-begrenzt::before { background: #e6de00; box-shadow: 0 0 10px #e6de00; }
+        .infographic-level.level-minimal::before { background: #4dff4d; box-shadow: 0 0 10px #4dff4d; }
+
+        .copy-btn {
+            background-color: var(--glow-color-1);
+            transition: background-color 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: var(--glow-color-3);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+
+    <div class="container mx-auto max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold magic-text">KI: Ihr digitaler Mitarbeiter</h1>
+            <p class="text-lg mt-2 text-gray-300">Ein interaktiver Leitfaden für KMU</p>
+        </header>
+
+        <!-- Menu -->
+        <nav class="flex justify-center flex-wrap gap-3 sm:gap-4 mb-12">
+            <button class="nav-button magic-button px-6 py-3 rounded-lg text-lg font-semibold" data-target="starter-kit">Starter-Kit</button>
+            <button class="nav-button magic-button px-6 py-3 rounded-lg text-lg font-semibold" data-target="infographic">EU AI Act</button>
+            <button class="nav-button magic-button px-6 py-3 rounded-lg text-lg font-semibold" data-target="flashcards">Lernkarten</button>
+            <button class="nav-button magic-button px-6 py-3 rounded-lg text-lg font-semibold" data-target="quiz">Quiz</button>
+        </nav>
+
+        <!-- Content Sections -->
+        <main id="content-container">
+            <!-- Starter-Kit Section -->
+            <section id="starter-kit" class="content-section">
+                 <div class="glass-card p-8">
+                    <h2 class="text-3xl font-bold mb-4 magic-text text-center">Kuratiertes Starter-Kit</h2>
+                    <p class="text-lg max-w-3xl mx-auto text-center mb-8">
+                        Keine Zeit verlieren! Kopieren Sie diese praxiserprobten Prompts und passen Sie die [Platzhalter] an, um sofort Ergebnisse in Tools wie Gemini oder ChatGPT zu erzielen.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="prompt-card glass-card p-6 flex flex-col">
+                           <h4 class="font-bold text-xl text-purple-300">E-Mail an Kunden verfassen</h4>
+                           <p class="text-sm text-gray-400 mb-3">Antwort auf eine Kundenbeschwerde.</p>
+                           <pre class="bg-gray-900/50 p-3 rounded-lg text-left text-sm whitespace-pre-wrap flex-grow"><code>Du bist ein erfahrener Kundenservice-Mitarbeiter. Schreibe eine professionelle und empathische E-Mail an einen Kunden, der sich über [Grund der Beschwerde] beschwert hat. Biete als Lösung [vorgeschlagene Lösung] an. Behalte einen freundlichen, aber formellen Ton bei.</code></pre>
+                           <button class="copy-btn mt-4 w-full text-white font-bold py-2 px-4 rounded-lg">Prompt kopieren</button>
+                        </div>
+                        <div class="prompt-card glass-card p-6 flex flex-col">
+                           <h4 class="font-bold text-xl text-purple-300">Social-Media-Post erstellen</h4>
+                           <p class="text-sm text-gray-400 mb-3">Ankündigung eines neuen Produkts.</p>
+                           <pre class="bg-gray-900/50 p-3 rounded-lg text-left text-sm whitespace-pre-wrap flex-grow"><code>Erstelle einen ansprechenden Social-Media-Post für [Plattform: z.B. LinkedIn, Instagram]. Wir kündigen unser neues Produkt an: [Produktname]. Die drei wichtigsten Vorteile sind: [Vorteil 1], [Vorteil 2], [Vorteil 3]. Der Post soll Begeisterung wecken und einen Link zu unserer Website enthalten. Füge 3-5 relevante Hashtags hinzu.</code></pre>
+                           <button class="copy-btn mt-4 w-full text-white font-bold py-2 px-4 rounded-lg">Prompt kopieren</button>
+                        </div>
+                         <div class="prompt-card glass-card p-6 flex flex-col">
+                           <h4 class="font-bold text-xl text-purple-300">Stellenbeschreibung entwerfen</h4>
+                           <p class="text-sm text-gray-400 mb-3">Für eine neue Position im Unternehmen.</p>
+                           <pre class="bg-gray-900/50 p-3 rounded-lg text-left text-sm whitespace-pre-wrap flex-grow"><code>Entwirf eine detaillierte Stellenbeschreibung für die Position [Jobtitel]. Zu den Hauptaufgaben gehören: [Aufgabe 1], [Aufgabe 2], [Aufgabe 3]. Erforderliche Qualifikationen sind [Qualifikation 1] und [Qualifikation 2]. Wir bieten [Benefit 1] und [Benefit 2]. Die Beschreibung soll qualifizierte Bewerber ansprechen.</code></pre>
+                           <button class="copy-btn mt-4 w-full text-white font-bold py-2 px-4 rounded-lg">Prompt kopieren</button>
+                        </div>
+                         <div class="prompt-card glass-card p-6 flex flex-col">
+                           <h4 class="font-bold text-xl text-purple-300">Brainstorming für Marketing</h4>
+                           <p class="text-sm text-gray-400 mb-3">Ideen für eine neue Kampagne.</p>
+                           <pre class="bg-gray-900/50 p-3 rounded-lg text-left text-sm whitespace-pre-wrap flex-grow"><code>Wir planen eine Marketingkampagne für unser Produkt [Produktname]. Unsere Zielgruppe sind [Beschreibung der Zielgruppe]. Gib mir 10 kreative und kostengünstige Ideen für eine Online-Marketingkampagne, die wir in den nächsten drei Monaten umsetzen können. Berücksichtige dabei auch unkonventionelle Ansätze.</code></pre>
+                           <button class="copy-btn mt-4 w-full text-white font-bold py-2 px-4 rounded-lg">Prompt kopieren</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Infographic Section -->
+            <section id="infographic" class="content-section hidden">
+                <div class="glass-card p-8">
+                    <h2 class="text-3xl font-bold mb-8 text-center magic-text">EU AI Act: Der risikobasierte Ansatz</h2>
+                    <div class="space-y-12">
+                        <!-- Level 1: Verboten -->
+                        <div class="infographic-level level-verboten">
+                            <h3 class="text-2xl font-bold text-red-400">Inakzeptables Risiko (Verboten)</h3>
+                            <p class="mt-2 text-gray-300">Systeme, die eine klare Bedrohung für die Sicherheit und Rechte der Menschen darstellen. <br><strong>Beispiel:</strong> Staatliches Social Scoring, manipulative KI.</p>
+                        </div>
+                        <!-- Level 2: Hoch -->
+                        <div class="infographic-level level-hoch">
+                            <h3 class="text-2xl font-bold text-orange-400">Hohes Risiko (Streng reguliert)</h3>
+                            <p class="mt-2 text-gray-300">KI in kritischen Bereichen, die strengen Anforderungen unterliegen.<br><strong>Beispiel:</strong> KI in medizinischen Geräten, Bewerberauswahl.</p>
+                        </div>
+                        <!-- Level 3: Begrenzt -->
+                        <div class="infographic-level level-begrenzt">
+                            <h3 class="text-2xl font-bold text-yellow-300">Begrenztes Risiko (Transparenzpflicht)</h3>
+                            <p class="mt-2 text-gray-300">Nutzer müssen informiert werden, dass sie mit einer KI interagieren.<br><strong>Beispiel:</strong> Chatbots, KI-generierte Inhalte (Deepfakes).</p>
+                        </div>
+                        <!-- Level 4: Minimal -->
+                        <div class="infographic-level level-minimal">
+                            <h3 class="text-2xl font-bold text-green-400">Minimales/Kein Risiko</h3>
+                            <p class="mt-2 text-gray-300">Die größte Kategorie, weitgehend unreguliert.<br><strong>Beispiel:</strong> Spam-Filter, KI in Videospielen, Lagerbestandsoptimierung.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Flashcards Section -->
+            <section id="flashcards" class="content-section hidden">
+                 <div class="glass-card p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center magic-text">Wichtige Begriffe</h2>
+                    <div id="flashcard-container" class="relative max-w-2xl mx-auto h-80 perspective-1000">
+                        <div class="flashcard w-full h-full cursor-pointer" onclick="this.classList.toggle('flipped')">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front glass-card">
+                                    <h3 id="flashcard-term" class="text-3xl font-bold"></h3>
+                                    <p class="mt-4 text-gray-400">Klicken zum Umdrehen</p>
+                                </div>
+                                <div class="flashcard-back glass-card">
+                                    <p id="flashcard-definition" class="text-lg"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6 max-w-2xl mx-auto">
+                        <button id="prev-card" class="magic-button px-5 py-2 rounded-lg">&lt; Zurück</button>
+                        <span id="card-counter" class="text-lg"></span>
+                        <button id="next-card" class="magic-button px-5 py-2 rounded-lg">Weiter &gt;</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quiz Section -->
+            <section id="quiz" class="content-section hidden">
+                 <div class="glass-card p-8 max-w-3xl mx-auto">
+                    <div id="quiz-start">
+                        <h2 class="text-3xl font-bold mb-4 text-center magic-text">Testen Sie Ihr Wissen!</h2>
+                        <p class="text-center mb-8">Ein kurzes Quiz mit 5 Fragen, um die Grundlagen zu festigen.</p>
+                        <button id="start-quiz-btn" class="magic-button w-full sm:w-auto mx-auto block px-8 py-4 rounded-lg text-xl font-semibold">Quiz starten</button>
+                    </div>
+                    <div id="quiz-main" class="hidden">
+                        <div id="quiz-header" class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold">Frage <span id="question-number"></span>/5</h3>
+                            <div class="text-xl font-bold">Score: <span id="score">0</span></div>
+                        </div>
+                        <p id="question-text" class="text-2xl font-semibold mb-8"></p>
+                        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Options will be injected here -->
+                        </div>
+                        <div id="explanation-container" class="mt-6"></div>
+                    </div>
+                    <div id="quiz-end" class="hidden text-center">
+                        <h2 class="text-3xl font-bold mb-4 magic-text">Quiz beendet!</h2>
+                        <p class="text-2xl mb-6">Ihr Endergebnis: <span id="final-score"></span> von 5</p>
+                        <p id="score-message" class="text-lg mb-8"></p>
+                        <button id="restart-quiz-btn" class="magic-button px-8 py-3 rounded-lg text-lg font-semibold">Nochmal versuchen</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navigation
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    contentSections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.classList.remove('hidden');
+                        } else {
+                            section.classList.add('hidden');
+                        }
+                    });
+                     // Special handling for flashcards to re-initialize on show
+                    if (targetId === 'flashcards') {
+                        showCard(currentCardIndex);
+                    }
+                });
+            });
+
+            // --- Starter-Kit Copy-to-Clipboard ---
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const pre = button.previousElementSibling;
+                    const code = pre.querySelector('code');
+                    const textToCopy = code.innerText;
+
+                    // Use document.execCommand for better iframe compatibility
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        button.textContent = 'Kopiert!';
+                        setTimeout(() => {
+                           button.textContent = 'Prompt kopieren';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Fehler beim Kopieren: ', err);
+                        button.textContent = 'Fehler!';
+                    }
+                    document.body.removeChild(textArea);
+                });
+            });
+
+
+            // --- Flashcards ---
+            const flashcardData = [
+                { term: "Künstliche Intelligenz (KI)", definition: "Das übergeordnete Ziel, Maschinen zu entwickeln, die menschliche Intelligenz nachahmen können. Beschreibt, *was* erreicht werden soll." },
+                { term: "Maschinelles Lernen (ML)", definition: "Die primäre Methode, mit der KI heute realisiert wird. Systeme lernen aus großen Datenmengen, um Muster zu erkennen und Vorhersagen zu treffen." },
+                { term: "Deep Learning", definition: "Ein leistungsstarker Teilbereich des ML, der künstliche neuronale Netze nutzt. Ideal für hochkomplexe Mustererkennung (z.B. Bild- & Spracherkennung)." },
+                { term: "Enge KI (Artificial Narrow Intelligence)", definition: "Beschreibt fast alle heutigen KI-Systeme. Sie sind darauf spezialisiert, *eine einzige*, klar definierte Aufgabe außergewöhnlich gut zu erledigen." },
+                { term: "EU AI Act", definition: "Ein gesetzlicher Rahmen der EU, der darauf abzielt, vertrauenswürdige KI zu schaffen. Verfolgt einen risikobasierten Ansatz zur Regulierung von KI-Anwendungen." },
+                { term: "Regulatorische Sandkästen", definition: "Kontrollierte Testumgebungen, in denen KMU neue KI-Systeme unter realen Bedingungen mit behördlicher Aufsicht entwickeln und validieren können." }
+            ];
+
+            let currentCardIndex = 0;
+            const termEl = document.getElementById('flashcard-term');
+            const definitionEl = document.getElementById('flashcard-definition');
+            const counterEl = document.getElementById('card-counter');
+            const flashcard = document.querySelector('.flashcard');
+
+            function showCard(index) {
+                if(!termEl) return;
+                flashcard.classList.remove('flipped');
+                setTimeout(() => {
+                    termEl.textContent = flashcardData[index].term;
+                    definitionEl.textContent = flashcardData[index].definition;
+                    counterEl.textContent = `${index + 1} / ${flashcardData.length}`;
+                }, 200); // Wait for flip back animation
+            }
+
+            document.getElementById('next-card')?.addEventListener('click', () => {
+                currentCardIndex = (currentCardIndex + 1) % flashcardData.length;
+                showCard(currentCardIndex);
+            });
+
+            document.getElementById('prev-card')?.addEventListener('click', () => {
+                currentCardIndex = (currentCardIndex - 1 + flashcardData.length) % flashcardData.length;
+                showCard(currentCardIndex);
+            });
+            
+            showCard(0);
+
+            // --- Quiz ---
+            const quizData = [
+                {
+                    question: "Welchen Ansatz verfolgt der EU AI Act zur Regulierung von KI?",
+                    options: ["Einen technologiebasierten Ansatz", "Einen risikobasierten Ansatz", "Einen marktbasierten Ansatz", "Einen datenbasierten Ansatz"],
+                    answer: "Einen risikobasierten Ansatz",
+                    explanation: "Der EU AI Act kategorisiert KI-Systeme nach dem potenziellen Schaden, den sie verursachen können, nicht nach der Technologie selbst."
+                },
+                {
+                    question: "Welcher Begriff beschreibt KI-Systeme, die auf eine einzige, spezifische Aufgabe spezialisiert sind?",
+                    options: ["Allgemeine KI (AGI)", "Superintelligenz", "Enge KI (ANI)", "Kreative KI"],
+                    answer: "Enge KI (ANI)",
+                    explanation: "Enge KI (ANI) ist auf spezifische Aufgaben spezialisiert, während Allgemeine KI (AGI) menschenähnliche, vielseitige Intelligenz anstrebt (was noch Zukunftsmusik ist)."
+                },
+                {
+                    question: "In welche Risikokategorie fallen laut EU AI Act typischerweise Chatbots?",
+                    options: ["Inakzeptables Risiko", "Hohes Risiko", "Begrenztes Risiko (Transparenzpflicht)", "Minimales Risiko"],
+                    answer: "Begrenztes Risiko (Transparenzpflicht)",
+                    explanation: "Bei Chatbots ist das Hauptrisiko, dass Nutzer nicht erkennen, dass sie mit einer Maschine sprechen. Daher schreibt der Act Transparenz vor."
+                },
+                {
+                    question: "Was ist die primäre Methode, mit der KI heute realisiert wird?",
+                    options: ["Explizite Programmierung", "Neuronale Programmierung", "Quantencomputing", "Maschinelles Lernen (ML)"],
+                    answer: "Maschinelles Lernen (ML)",
+                    explanation: "Maschinelles Lernen ist der Kernansatz, bei dem Algorithmen aus Daten lernen, anstatt für jede Aufgabe explizit programmiert zu werden."
+                },
+                {
+                    question: "Welches der folgenden Werkzeuge ist speziell darauf ausgelegt, eigene Dokumente hochzuladen und per Chat abzufragen?",
+                    options: ["ChatGPT", "Midjourney", "NotebookLM", "DeepL Write"],
+                    answer: "NotebookLM",
+                    explanation: "NotebookLM ist ein Tool von Google, das speziell dafür entwickelt wurde, um mit den eigenen Quellen (PDFs, Google Docs, etc.) zu 'sprechen' und daraus Erkenntnisse zu gewinnen."
+                }
+            ];
+
+            let currentQuestionIndex = 0;
+            let score = 0;
+
+            const quizStart = document.getElementById('quiz-start');
+            const quizMain = document.getElementById('quiz-main');
+            const quizEnd = document.getElementById('quiz-end');
+            
+            const startBtn = document.getElementById('start-quiz-btn');
+            const restartBtn = document.getElementById('restart-quiz-btn');
+
+            const questionNumberEl = document.getElementById('question-number');
+            const questionTextEl = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const explanationContainer = document.getElementById('explanation-container');
+            const scoreEl = document.getElementById('score');
+            const finalScoreEl = document.getElementById('final-score');
+            const scoreMessageEl = document.getElementById('score-message');
+
+            function startQuiz() {
+                currentQuestionIndex = 0;
+                score = 0;
+                scoreEl.textContent = 0;
+                quizStart.classList.add('hidden');
+                quizEnd.classList.add('hidden');
+                quizMain.classList.remove('hidden');
+                showQuestion();
+            }
+
+            function showQuestion() {
+                explanationContainer.innerHTML = '';
+                const question = quizData[currentQuestionIndex];
+                questionNumberEl.textContent = currentQuestionIndex + 1;
+                questionTextEl.textContent = question.question;
+                optionsContainer.innerHTML = '';
+                
+                question.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.className = 'magic-button p-4 rounded-lg text-left w-full';
+                    button.onclick = () => selectAnswer(option, button);
+                    optionsContainer.appendChild(button);
+                });
+            }
+
+            function selectAnswer(selectedOption, button) {
+                const isCorrect = selectedOption === quizData[currentQuestionIndex].answer;
+                
+                Array.from(optionsContainer.children).forEach(btn => btn.disabled = true);
+                
+                if (isCorrect) {
+                    score++;
+                    scoreEl.textContent = score;
+                    button.style.borderColor = 'var(--glow-color-2)';
+                    button.style.boxShadow = '0 0 15px var(--glow-color-2)';
+                } else {
+                    button.style.borderColor = 'var(--glow-color-3)';
+                    button.style.boxShadow = '0 0 15px var(--glow-color-3)';
+                    // Highlight correct answer
+                    Array.from(optionsContainer.children).forEach(btn => {
+                        if(btn.textContent === quizData[currentQuestionIndex].answer) {
+                             btn.style.borderColor = 'var(--glow-color-2)';
+                        }
+                    });
+                    // Show explanation
+                    const explanation = quizData[currentQuestionIndex].explanation;
+                    explanationContainer.innerHTML = `
+                        <div class="glass-card p-4 border-l-4 border-yellow-400 animate-fade-in">
+                            <h4 class="font-bold text-yellow-300">Erklärung:</h4>
+                            <p class="text-gray-300 mt-1">${explanation}</p>
+                        </div>
+                    `;
+                }
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < quizData.length) {
+                        showQuestion();
+                    } else {
+                        endQuiz();
+                    }
+                }, 3000); // Increased delay to allow reading explanation
+            }
+
+            function endQuiz() {
+                quizMain.classList.add('hidden');
+                quizEnd.classList.remove('hidden');
+                finalScoreEl.textContent = score;
+                if(score === 5) {
+                    scoreMessageEl.textContent = "Hervorragend! Sie sind ein KI-Experte!";
+                } else if (score >= 3) {
+                    scoreMessageEl.textContent = "Sehr gut gemacht! Sie haben die Grundlagen verstanden.";
+                } else {
+                    scoreMessageEl.textContent = "Guter Anfang! Schauen Sie sich die Lernkarten nochmal an, um Ihr Wissen zu vertiefen.";
+                }
+            }
+
+            startBtn.addEventListener('click', startQuiz);
+            restartBtn.addEventListener('click', startQuiz);
+        });
+    </script>
+</body>
+</html>
+
