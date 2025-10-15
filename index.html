@@ -92,13 +92,18 @@
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
             flex-direction: column;
             padding: 2rem;
         }
+        
+        .flashcard-front {
+             align-items: center;
+             justify-content: center;
+        }
 
         .flashcard-back {
+            justify-content: space-between;
+            align-items: flex-start;
             transform: rotateY(180deg);
         }
 
@@ -223,7 +228,7 @@
             <section id="flashcards" class="content-section hidden">
                  <div class="glass-card p-8">
                     <h2 class="text-3xl font-bold mb-6 text-center magic-text">Wichtige Begriffe</h2>
-                    <div id="flashcard-container" class="relative max-w-2xl mx-auto h-80 perspective-1000">
+                    <div id="flashcard-container" class="relative max-w-2xl mx-auto perspective-1000" style="height: 420px;">
                         <div class="flashcard w-full h-full cursor-pointer" onclick="this.classList.toggle('flipped')">
                             <div class="flashcard-inner">
                                 <div class="flashcard-front glass-card">
@@ -231,7 +236,13 @@
                                     <p class="mt-4 text-gray-400">Klicken zum Umdrehen</p>
                                 </div>
                                 <div class="flashcard-back glass-card">
-                                    <p id="flashcard-definition" class="text-lg"></p>
+                                    <div>
+                                        <p id="flashcard-definition" class="text-lg text-left"></p>
+                                    </div>
+                                    <div id="flashcard-funfact-container" class="mt-4 pt-4 w-full text-left hidden border-t border-cyan-500/30">
+                                        <p class="font-bold text-cyan-300">Fun Fact:</p>
+                                        <p id="flashcard-funfact" class="italic mt-1 text-sm"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -327,26 +338,38 @@
 
             // --- Flashcards ---
             const flashcardData = [
-                { term: "Künstliche Intelligenz (KI)", definition: "Das übergeordnete Ziel, Maschinen zu entwickeln, die menschliche Intelligenz nachahmen können. Beschreibt, *was* erreicht werden soll." },
-                { term: "Maschinelles Lernen (ML)", definition: "Die primäre Methode, mit der KI heute realisiert wird. Systeme lernen aus großen Datenmengen, um Muster zu erkennen und Vorhersagen zu treffen." },
-                { term: "Deep Learning", definition: "Ein leistungsstarker Teilbereich des ML, der künstliche neuronale Netze nutzt. Ideal für hochkomplexe Mustererkennung (z.B. Bild- & Spracherkennung)." },
-                { term: "Enge KI (Artificial Narrow Intelligence)", definition: "Beschreibt fast alle heutigen KI-Systeme. Sie sind darauf spezialisiert, *eine einzige*, klar definierte Aufgabe außergewöhnlich gut zu erledigen." },
-                { term: "EU AI Act", definition: "Ein gesetzlicher Rahmen der EU, der darauf abzielt, vertrauenswürdige KI zu schaffen. Verfolgt einen risikobasierten Ansatz zur Regulierung von KI-Anwendungen." },
-                { term: "Regulatorische Sandkästen", definition: "Kontrollierte Testumgebungen, in denen KMU neue KI-Systeme unter realen Bedingungen mit behördlicher Aufsicht entwickeln und validieren können." }
+                { term: "Künstliche Intelligenz (KI)", definition: "Das übergeordnete Ziel, Maschinen zu entwickeln, die menschliche Intelligenz nachahmen können. Beschreibt, *was* erreicht werden soll.", funFact: "Der Begriff wurde 1956 geprägt. Eines der ersten KI-Programme, ELIZA (1966), simulierte eine Psychotherapeutin so überzeugend, dass viele dachten, sie sei ein Mensch." },
+                { term: "Maschinelles Lernen (ML)", definition: "Die primäre Methode, mit der KI heute realisiert wird. Systeme lernen aus großen Datenmengen, um Muster zu erkennen und Vorhersagen zu treffen.", funFact: "Ein Dame-spielendes Programm aus den 1950ern lernte aus seinen Fehlern und wurde schließlich besser als sein eigener Schöpfer, Arthur Samuel." },
+                { term: "Deep Learning", definition: "Ein leistungsstarker Teilbereich des ML, der künstliche neuronale Netze nutzt. Ideal für hochkomplexe Mustererkennung (z.B. Bild- & Spracherkennung).", funFact: "Inspiriert vom menschlichen Gehirn, brachte sich ein Google-System 2012 selbst bei, Katzen zu erkennen, nur indem es sich Millionen YouTube-Videos ansah – ohne zu wissen, was eine Katze ist." },
+                { term: "Enge KI (Artificial Narrow Intelligence)", definition: "Beschreibt fast alle heutigen KI-Systeme. Sie sind darauf spezialisiert, *eine einzige*, klar definierte Aufgabe außergewöhnlich gut zu erledigen.", funFact: "Der Spam-Filter in Ihrem E-Mail-Postfach ist eine klassische Enge KI. Er macht einen Job extrem gut, kann aber kein Gedicht schreiben oder eine Krankheit diagnostizieren." },
+                { term: "EU AI Act", definition: "Ein gesetzlicher Rahmen der EU, der darauf abzielt, vertrauenswürdige KI zu schaffen. Verfolgt einen risikobasierten Ansatz zur Regulierung von KI-Anwendungen.", funFact: "Dies ist das weltweit erste umfassende KI-Gesetz. Die EU setzt damit einen potenziellen globalen Standard, was als „Brüssel-Effekt“ bekannt ist." },
+                { term: "Regulatorische Sandkästen", definition: "Kontrollierte Testumgebungen, in denen KMU neue KI-Systeme unter realen Bedingungen mit behördlicher Aufsicht entwickeln und validieren können.", funFact: "Das Konzept der „regulatorischen Sandkästen“ stammt ursprünglich aus der Finanztechnologie (FinTech) in Großbritannien, um Innovationen sicher testen zu können." },
+                { term: "KI-Agent", definition: "Ein Agent ist eine Anwendung, die versucht, ein Ziel zu erreichen, indem sie die Welt beobachtet und mit den ihr zur Verfügung stehenden Werkzeugen darauf reagiert.", funFact: "Ein Saugroboter ist ein einfacher physischer KI-Agent. Sein Ziel: ein sauberer Boden. Er beobachtet die Welt mit Sensoren und handelt mit seinen Werkzeugen (Rädern, Sauger)." }
             ];
 
             let currentCardIndex = 0;
             const termEl = document.getElementById('flashcard-term');
             const definitionEl = document.getElementById('flashcard-definition');
+            const funFactContainer = document.getElementById('flashcard-funfact-container');
+            const funFactEl = document.getElementById('flashcard-funfact');
             const counterEl = document.getElementById('card-counter');
             const flashcard = document.querySelector('.flashcard');
 
             function showCard(index) {
                 if(!termEl) return;
+                const cardData = flashcardData[index];
                 flashcard.classList.remove('flipped');
                 setTimeout(() => {
-                    termEl.textContent = flashcardData[index].term;
-                    definitionEl.textContent = flashcardData[index].definition;
+                    termEl.textContent = cardData.term;
+                    definitionEl.textContent = cardData.definition;
+                    
+                    if (cardData.funFact && funFactEl) {
+                        funFactEl.textContent = cardData.funFact;
+                        funFactContainer.classList.remove('hidden');
+                    } else {
+                        funFactContainer.classList.add('hidden');
+                    }
+
                     counterEl.textContent = `${index + 1} / ${flashcardData.length}`;
                 }, 200); // Wait for flip back animation
             }
